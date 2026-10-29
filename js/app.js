@@ -275,7 +275,13 @@ function renderDay(i) {
           <div class="stack tight">
             <h3>${ex.name}</h3>
             <p class="presc">${ex.text}${ex.rest ? ` <span class="muted">· descanso ${ex.rest} s</span>` : ''}</p>
-            <details><summary class="small">Como fazer</summary><p class="small muted">${ex.tip}</p></details>
+            <details class="howto">
+              <summary>📖 Como fazer</summary>
+              <p class="small"><strong>Trabalha:</strong> ${ex.muscles}</p>
+              <ol>${ex.steps.map((step) => `<li>${step}</li>`).join('')}</ol>
+              <p class="small hint">💡 ${ex.tip}</p>
+              <a class="video" href="https://www.youtube.com/results?search_query=${encodeURIComponent(`como fazer ${ex.video} exercício`)}" target="_blank" rel="noopener">▶ Ver vídeo de como fazer</a>
+            </details>
           </div>
         </article>`).join('')}
 

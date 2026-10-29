@@ -98,6 +98,10 @@ function prescription(ex, profile, status) {
   return { text: `${sets} × ${reps} repetições`, rest, sets, work: reps * 3 };
 }
 
+function howTo(ex) {
+  return { id: ex.id, muscles: ex.muscles, steps: ex.steps, tip: ex.tip, video: ex.name };
+}
+
 function buildDay(kind, dayIdx, profile, status, week) {
   const tpl = TEMPLATES[kind];
   const count = SLOTS_BY_DURATION[profile.duracao] ?? 5;
@@ -112,14 +116,14 @@ function buildDay(kind, dayIdx, profile, status, week) {
     const top = options.slice(0, Math.min(3, options.length));
     const pick = top[(week + dayIdx * 2 + slotIdx) % top.length];
     used.add(pick.id);
-    exercises.push({ id: pick.id, name: pick.name, tip: pick.tip, ...prescription(pick, profile, status) });
+    exercises.push({ ...howTo(pick), name: pick.name, ...prescription(pick, profile, status) });
   });
 
   if (kind !== 'cardio' && (profile.objetivo === 'emagrecer' || profile.objetivo === 'condicionamento')) {
     const finisher = EXERCISES
       .filter((ex) => ex.pattern === 'cardio' && !used.has(ex.id) && available(ex, profile, status))
       .sort((a, b) => b.level - a.level)[0];
-    if (finisher) exercises.push({ id: finisher.id, name: `Final: ${finisher.name}`, tip: finisher.tip, ...prescription(finisher, profile, status) });
+    if (finisher) exercises.push({ ...howTo(finisher), name: `Final: ${finisher.name}`, ...prescription(finisher, profile, status) });
   }
 
   const stepsSecs = (list) => list.reduce((t, s) => t + s.secs * (s.sides ? 2 : 1), 0);
