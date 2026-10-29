@@ -1,5 +1,5 @@
 // Cache para o app funcionar offline. Mude a versão a cada atualização dos arquivos.
-const CACHE = 'meu-treino-v1';
+const CACHE = 'meu-treino-v2';
 const FILES = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const FILES = [
   './js/app.js',
   './js/planner.js',
   './js/exercises.js',
+  './js/timer.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
 ];

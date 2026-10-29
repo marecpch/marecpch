@@ -163,3 +163,53 @@ details summary.small { color: var(--accent); }
 }
 .tabbar button span { font-size: 1.3rem; }
 .tabbar button.active { color: var(--accent); font-weight: 600; }
+
+/* ---------- Semana ---------- */
+.title-row { display: flex; align-items: baseline; justify-content: space-between; }
+.count { font-weight: 700; color: var(--accent); font-size: 1.1rem; }
+.eyebrow { font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+.today { display: flex; flex-direction: column; gap: 8px; border: 2px solid var(--accent); }
+.today h2 { font-size: 1.3rem; }
+.today.rest { border-style: dashed; border-color: var(--line); }
+.section-title { margin-top: 8px; }
+.grow { flex: 1; min-width: 0; }
+.day { flex-direction: column; align-items: stretch; gap: 10px; }
+.day-head { display: flex; align-items: center; gap: 12px; }
+.day-icon {
+  width: 40px; height: 40px; flex: none; border-radius: 12px;
+  display: grid; place-items: center; font-size: 1.2rem; background: var(--accent-soft);
+}
+.day.done .day-icon { background: var(--accent); color: var(--card); font-weight: 700; }
+.ex-preview { list-style: none; margin: 0; padding: 10px 0 0; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px; font-size: .85rem; }
+.ex-preview li { display: flex; justify-content: space-between; gap: 12px; }
+.ex-preview li span:last-child { white-space: nowrap; }
+.day.done .ex-preview { display: none; }
+.tips summary h2 { font-size: .95rem; }
+
+/* ---------- Treino do dia ---------- */
+.section-head { display: flex; align-items: center; gap: 10px; }
+.section-head h2 { flex: 1; }
+.num {
+  width: 26px; height: 26px; border-radius: 50%; flex: none;
+  display: grid; place-items: center; font-size: .8rem; font-weight: 700;
+  background: var(--accent); color: var(--card);
+}
+
+.timer { background: var(--accent-soft); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px; text-align: center; }
+.t-label { font-weight: 600; min-height: 1.45em; }
+.t-time { font-size: 3rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; color: var(--accent); }
+.preparing .t-time { color: var(--muted); }
+.t-buttons { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; }
+.t-buttons .btn { padding: 12px; }
+.timer .progress { background: var(--card); }
+
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.steps li { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); cursor: pointer; }
+.steps .dot { width: 14px; height: 14px; margin-top: 4px; flex: none; border-radius: 50%; border: 2px solid var(--line); }
+.steps .s-name { font-weight: 600; }
+.steps .s-dur { margin-left: auto; text-align: right; font-weight: 600; font-size: .85rem; white-space: nowrap; color: var(--muted); }
+.steps li > div { flex: 1; }
+.steps li.active .dot { border-color: var(--accent); background: var(--accent-soft); }
+.steps li.active .s-name, .steps li.active .s-dur { color: var(--accent); }
+.steps li.done { opacity: .55; }
+.steps li.done .dot { background: var(--accent); border-color: var(--accent); }

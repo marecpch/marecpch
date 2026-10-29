@@ -174,16 +174,20 @@ export const EXERCISES = [
     tip: 'Alterne 1 min correndo e 1 min caminhando.' },
 ];
 
+// Etapas com tempo (segundos). sides: true = faz um lado e depois o outro.
 export const WARMUP = [
-  'Rotação de ombros e braços — 30 s',
-  'Rotação de quadril — 30 s',
-  'Marcha no lugar — 1 min',
-  'Agachamento leve (meia amplitude) — 10x',
+  { name: 'Rotação de ombros e braços', secs: 30, tip: 'Círculos grandes com os braços, para frente e para trás.' },
+  { name: 'Rotação de quadril', secs: 30, tip: 'Mãos na cintura, faça círculos com o quadril nos dois sentidos.' },
+  { name: 'Marcha no lugar', secs: 60, tip: 'Eleve os joelhos e balance os braços, sem pressa.' },
+  { name: 'Agachamento leve', secs: 30, tip: 'Meia descida, devagar, só para aquecer joelhos e quadril.' },
+  { name: 'Abertura de peito', secs: 30, tip: 'Abra os braços para trás e volte, como num abraço ao contrário.' },
 ];
 
 export const COOLDOWN = [
-  'Alongamento de posterior de coxa — 30 s cada perna',
-  'Alongamento de quadríceps — 30 s cada perna',
-  'Alongamento de peito na parede — 30 s cada lado',
-  'Respiração profunda — 1 min',
+  { name: 'Alongamento de posterior de coxa', secs: 30, sides: true, tip: 'Perna estendida à frente (pode ser apoiada num degrau), incline o tronco sem forçar.' },
+  { name: 'Alongamento de quadríceps', secs: 30, sides: true, tip: 'Em pé, segure o pé atrás levando o calcanhar ao glúteo. Apoie-se na parede.' },
+  { name: 'Alongamento de peito na parede', secs: 30, sides: true, tip: 'Antebraço apoiado na parede, gire o corpo devagar para o lado oposto.' },
+  { name: 'Alongamento de ombro', secs: 30, sides: true, tip: 'Cruze o braço à frente do peito e puxe com a outra mão.' },
+  { name: 'Postura da criança (lombar)', secs: 30, tip: 'Sente nos calcanhares e leve as mãos à frente no chão, relaxando as costas.' },
+  { name: 'Respiração profunda', secs: 60, tip: 'Inspire em 4 segundos e solte o ar em 6 segundos.' },
 ];

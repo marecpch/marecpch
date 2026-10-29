@@ -1,5 +1,6 @@
 import { EQUIPMENT } from './exercises.js';
 import { buildWeek, feedbackAdjustment, imc, imcLabel } from './planner.js';
+import { setupTimer, stepsHTML, stopActiveTimer } from './timer.js';
 
 const STORAGE_KEY = 'treino-state-v1';
 const app = document.getElementById('app');
@@ -28,6 +29,7 @@ function save() {
 }
 
 function go(next) {
+  stopActiveTimer();
   view = next;
   render();
   window.scrollTo(0, 0);
@@ -140,12 +142,43 @@ function renderProfile() {
 
 // ---------------- Semana ----------------
 
+const WEEKDAY_NAMES = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+const FEEDBACK_EMOJI = { facil: '😌', ok: '💪', dificil: '🥵' };
+const KIND_ICON = { corpo: '🏋️', superior: '💪', inferior: '🦵', cardio: '❤️' };
+const LABELS = {
+  local: { casa: 'Em casa', academia: 'Academia' },
+  objetivo: { emagrecer: 'Emagrecer', forca: 'Força / massa', condicionamento: 'Condicionamento', saude: 'Saúde' },
+};
+
 function currentPlan() {
   return buildWeek(state.profile, state.week, state.adj);
 }
 
 function levelText(level) {
   return ['', 'Iniciante', 'Intermediário', 'Avançado'][level];
+}
+
+function todayCard(plan, fb) {
+  const today = WEEKDAY_NAMES[new Date().getDay()];
+  const i = plan.days.findIndex((d) => d.weekday === today);
+  if (i >= 0 && !fb[i]) {
+    const day = plan.days[i];
+    return `
+      <section class="card today">
+        <p class="eyebrow">Treino de hoje · ${today}</p>
+        <h2>${KIND_ICON[day.kind]} ${day.title}</h2>
+        <p class="muted small">⏱ ~${day.minutes} min · ${day.exercises.length} exercícios</p>
+        <button class="btn primary" data-day="${i}">Começar treino</button>
+      </section>`;
+  }
+  const next = plan.days.findIndex((_, j) => !fb[j]);
+  const msg = i >= 0 ? 'Treino de hoje concluído! 🎉' : 'Hoje é dia de descanso 😴';
+  return `
+    <section class="card today rest">
+      <p class="eyebrow">${today}</p>
+      <h2>${msg}</h2>
+      ${next >= 0 ? `<p class="muted small">Próximo: ${plan.days[next].weekday} · ${plan.days[next].title}</p>` : '<p class="muted small">Você completou todos os treinos da semana!</p>'}
+    </section>`;
 }
 
 function renderWeek() {
@@ -161,26 +194,36 @@ function renderWeek() {
 
   app.innerHTML = `
     <header class="top">
-      <p class="muted">Olá${state.profile.nome ? `, ${esc(state.profile.nome)}` : ''}!</p>
-      <h1>Semana ${state.week}</h1>
-      <div class="badges">
-        <span class="badge">${levelText(plan.status.level)}</span>
-        <span class="badge">${done}/${total} treinos</span>
-        <span class="badge">IMC ${bmi.toFixed(1)} · ${imcLabel(bmi)}</span>
+      <p class="muted">Olá${state.profile.nome ? `, ${esc(state.profile.nome)}` : ''}! 👋</p>
+      <div class="title-row">
+        <h1>Semana ${state.week}</h1>
+        <span class="count">${done}/${total}</span>
       </div>
       <div class="progress"><div style="width:${(done / total) * 100}%"></div></div>
+      <div class="badges">
+        <span class="badge">${LABELS.local[state.profile.local]}</span>
+        <span class="badge">${LABELS.objetivo[state.profile.objetivo]}</span>
+        <span class="badge">${levelText(plan.status.level)}</span>
+      </div>
     </header>
     <main class="stack">
-      ${notes.map((n) => `<p class="note">${n}</p>`).join('')}
+      ${todayCard(plan, fb)}
+      ${notes.length ? `<details class="card tips"><summary><h2>💡 Dicas desta semana</h2></summary><ul class="plain">${notes.map((n) => `<li>${n}</li>`).join('')}</ul></details>` : ''}
+
+      <h2 class="section-title">Treinos da semana</h2>
       ${plan.days.map((day, i) => `
         <button class="card day ${fb[i] ? 'done' : ''}" data-day="${i}">
-          <div>
-            <p class="muted small">${day.weekday} · Treino ${i + 1}</p>
-            <h2>${day.title}</h2>
-            <p class="muted small">${day.exercises.length} exercícios</p>
+          <div class="day-head">
+            <span class="day-icon">${fb[i] ? '✓' : KIND_ICON[day.kind]}</span>
+            <div class="grow">
+              <p class="muted small">${day.weekday} · Treino ${i + 1}</p>
+              <h3>${day.title}</h3>
+            </div>
+            <span class="muted small">${fb[i] ? FEEDBACK_EMOJI[fb[i]] : `⏱ ~${day.minutes} min`}</span>
           </div>
-          <span class="status">${fb[i] ? '✓' : '›'}</span>
+          <ul class="ex-preview">${day.exercises.map((ex) => `<li><span>${ex.name}</span><span class="muted">${ex.text}</span></li>`).join('')}</ul>
         </button>`).join('')}
+
       <button class="btn ${done === total ? 'primary' : 'ghost'}" id="next-week">
         ${done === total ? 'Semana concluída! Gerar próxima semana' : 'Pular para a próxima semana'}
       </button>
@@ -189,7 +232,7 @@ function renderWeek() {
           <h2>Histórico</h2>
           <ul class="history">${state.history.slice().reverse().map((h) => `<li><span>Semana ${h.week}</span><span>${h.done}/${h.total} treinos</span></li>`).join('')}</ul>
         </section>` : ''}
-      <p class="muted small center">Sentiu dor (não cansaço)? Pare o exercício. Em caso de problemas de saúde, consulte um médico antes de começar.</p>
+      <p class="muted small center">IMC ${bmi.toFixed(1)} (${imcLabel(bmi)}). Sentiu dor (não cansaço)? Pare o exercício. Em caso de problemas de saúde, consulte um médico antes de começar.</p>
     </main>
     ${nav('week')}
   `;
@@ -211,18 +254,21 @@ function renderDay(i) {
   const day = currentPlan().days[i];
   const checks = state.checks[state.week]?.[i] ?? [];
   const fb = state.feedback[state.week]?.[i];
+  const mins = (list) => Math.round(list.reduce((t, s) => t + s.secs * (s.sides ? 2 : 1), 0) / 60);
 
   app.innerHTML = `
     <header class="top">
       <button class="back" id="back">‹ Semana ${state.week}</button>
-      <h1>${day.title}</h1>
-      <p class="muted">${day.weekday} · Treino ${i + 1}</p>
+      <h1>${KIND_ICON[day.kind]} ${day.title}</h1>
+      <p class="muted">${day.weekday} · Treino ${i + 1} · ⏱ ~${day.minutes} min</p>
     </header>
     <main class="stack">
-      <details class="card">
-        <summary><h2>Aquecimento (~3 min)</h2></summary>
-        <ul class="plain">${day.warmup.map((w) => `<li>${w}</li>`).join('')}</ul>
-      </details>
+      <section class="card stack" id="warmup">
+        <div class="section-head"><span class="num">1</span><h2>Aquecimento</h2><span class="muted small">~${mins(day.warmup)} min</span></div>
+        ${stepsHTML(day.warmup)}
+      </section>
+
+      <div class="section-head"><span class="num">2</span><h2>Exercícios</h2><span class="muted small" id="ex-count">${checks.length}/${day.exercises.length}</span></div>
       ${day.exercises.map((ex) => `
         <article class="card exercise ${checks.includes(ex.id) ? 'checked' : ''}">
           <label class="check"><input type="checkbox" data-ex="${ex.id}" ${checks.includes(ex.id) ? 'checked' : ''}><span></span></label>
@@ -232,10 +278,12 @@ function renderDay(i) {
             <details><summary class="small">Como fazer</summary><p class="small muted">${ex.tip}</p></details>
           </div>
         </article>`).join('')}
-      <details class="card">
-        <summary><h2>Alongamento final</h2></summary>
-        <ul class="plain">${day.cooldown.map((w) => `<li>${w}</li>`).join('')}</ul>
-      </details>
+
+      <section class="card stack" id="cooldown">
+        <div class="section-head"><span class="num">3</span><h2>Alongamento</h2><span class="muted small">~${mins(day.cooldown)} min</span></div>
+        ${stepsHTML(day.cooldown)}
+      </section>
+
       <section class="card stack">
         <h2>${fb ? 'Treino concluído! Como foi?' : 'Terminou? Como foi o treino?'}</h2>
         <p class="muted small">Isso ajusta a intensidade da próxima semana.</p>
@@ -247,6 +295,8 @@ function renderDay(i) {
     </main>
   `;
 
+  setupTimer(document.getElementById('warmup'), day.warmup);
+  setupTimer(document.getElementById('cooldown'), day.cooldown);
   document.getElementById('back').addEventListener('click', () => go({ name: 'week' }));
   app.querySelectorAll('[data-ex]').forEach((el) => el.addEventListener('change', () => {
     const w = (state.checks[state.week] ??= {});
@@ -254,6 +304,7 @@ function renderDay(i) {
     el.checked ? list.add(el.dataset.ex) : list.delete(el.dataset.ex);
     w[i] = [...list];
     el.closest('.exercise').classList.toggle('checked', el.checked);
+    document.getElementById('ex-count').textContent = `${w[i].length}/${day.exercises.length}`;
     save();
   }));
   app.querySelectorAll('[data-fb]').forEach((el) => el.addEventListener('click', () => {

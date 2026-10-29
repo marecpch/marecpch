@@ -84,17 +84,18 @@ function prescription(ex, profile, status) {
 
   if (ex.unit === 'min') {
     const min = Math.min(30, 10 + 2 * p);
-    return { text: `${deload ? Math.round(min * 0.7) : min} min`, rest: null };
+    const total = deload ? Math.round(min * 0.7) : min;
+    return { text: `${total} min`, rest: null, sets: 1, work: total * 60 };
   }
   if (ex.unit === 'seg') {
     const secs = 20 + 5 * step + 10 * (level - 1);
     const rest = ex.pattern === 'cardio' ? Math.max(20, 45 - 5 * step) : 45;
-    return { text: `${sets} × ${secs} s`, rest };
+    return { text: `${sets} × ${secs} s`, rest, sets, work: secs };
   }
   const [lo, hi] = REPS[profile.objetivo] ?? REPS.saude;
   const reps = Math.min(hi, lo + step);
   const rest = profile.objetivo === 'forca' ? 90 : 60;
-  return { text: `${sets} × ${reps} repetições`, rest };
+  return { text: `${sets} × ${reps} repetições`, rest, sets, work: reps * 3 };
 }
 
 function buildDay(kind, dayIdx, profile, status, week) {
@@ -121,8 +122,12 @@ function buildDay(kind, dayIdx, profile, status, week) {
     if (finisher) exercises.push({ id: finisher.id, name: `Final: ${finisher.name}`, tip: finisher.tip, ...prescription(finisher, profile, status) });
   }
 
+  const stepsSecs = (list) => list.reduce((t, s) => t + s.secs * (s.sides ? 2 : 1), 0);
+  const workSecs = exercises.reduce((t, ex) => t + ex.sets * (ex.work + (ex.rest ?? 0)), 0);
   return {
+    kind,
     title: tpl.title,
+    minutes: Math.max(10, Math.round((workSecs + stepsSecs(WARMUP) + stepsSecs(COOLDOWN)) / 300) * 5),
     weekday: WEEKDAYS[profile.dias][dayIdx],
     warmup: WARMUP,
     cooldown: COOLDOWN,
